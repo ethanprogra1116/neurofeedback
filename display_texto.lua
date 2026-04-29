@@ -1,37 +1,31 @@
 function initialize(box)
   dofile(box:get_config("${Path_Data}") .. "/plugins/stimulation/lua-stimulator-stim-codes.lua")
-  state = 0
-  state_start_time = 0
 end
 
 function process(box)
-  local t = box:get_current_time()
+  local t
 
-  -- Estado 0: inicio → envía imagen 1
-  if state == 0 then
-    box:send_stimulation(1, OVTK_StimulationId_Label_00, t, 0)
-    state_start_time = t
-    state = 1
+  -- Imagen 1: fondo negro aparece
+  t = box:get_current_time()
+  box:send_stimulation(1, OVTK_StimulationId_Label_00, t, 0)
 
-    -- Estado 1: espera 5 seg con imagen 1
-  elseif state == 1 then
-    if t >= state_start_time + 5 then
-      -- Envía imagen 2
-      box:send_stimulation(1, OVTK_StimulationId_Label_02, t, 0)
-      state_start_time = t
-      state = 2
-    end
-
-    -- Estado 2: espera 10 seg con imagen 2
-  elseif state == 2 then
-    if t >= state_start_time + 10 then
-      -- Cierra pantalla
-      box:send_stimulation(1, OVTK_StimulationId_VisualStimulationStop, t, 0)
-      state = 3
-    end
-
-    -- Estado 3: terminado, no hacer nada
+  -- Espera 3 segundos
+  while box:get_current_time() < t + 60 do
+    box:sleep()
   end
+
+  -- Imagen 2: texto aparece
+  t = box:get_current_time()
+  box:send_stimulation(1, OVTK_StimulationId_Label_02, t, 0)
+
+  -- Espera 3 segundos
+  while box:get_current_time() < t + 180 do
+    box:sleep()
+  end
+
+  -- Detiene el escenario
+  t = box:get_current_time()
+  box:send_stimulation(1, OVTK_StimulationId_Label_03, t, 0)
 end
 
 function uninitialize(box)
